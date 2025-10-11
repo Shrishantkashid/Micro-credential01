@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, Zap } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 
 const SyncButton = ({ onSync, syncing, className = '' }) => {

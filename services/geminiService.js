@@ -1,5 +1,25 @@
 const axios = require('axios');
-const config = require('../config/env.json');
+
+// Load configuration based on environment
+let config;
+try {
+  if (process.env.NODE_ENV === 'production') {
+    config = {
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY || ''
+    };
+  } else {
+    try {
+      config = require('../config/env.json');
+    } catch (err) {
+      config = {
+        GEMINI_API_KEY: process.env.GEMINI_API_KEY || ''
+      };
+    }
+  }
+} catch (error) {
+  console.error('Gemini configuration loading error:', error.message);
+  config = { GEMINI_API_KEY: '' }; // Gemini is optional
+}
 
 class GeminiService {
   constructor() {

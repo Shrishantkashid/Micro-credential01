@@ -1,5 +1,29 @@
 const { google } = require('googleapis');
-const config = require('../config/env.json');
+
+// Load configuration based on environment
+let config;
+try {
+  if (process.env.NODE_ENV === 'production') {
+    config = {
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+      GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI
+    };
+  } else {
+    try {
+      config = require('../config/env.json');
+    } catch (err) {
+      config = {
+        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+        GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+        GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI
+      };
+    }
+  }
+} catch (error) {
+  console.error('Gmail configuration loading error:', error.message);
+  throw error;
+}
 
 class GmailService {
   constructor() {

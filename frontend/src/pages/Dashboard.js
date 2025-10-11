@@ -22,27 +22,6 @@ const Dashboard = ({ user, onLogout }) => {
   const [selectedPlatform, setSelectedPlatform] = useState('all');
   const [sortBy, setSortBy] = useState('date');
 
-  useEffect(() => {
-    if (user && user.email) {
-      loadDashboardData();
-    }
-  }, [user, loadDashboardData]);
-
-  const loadDashboardData = useCallback(async () => {
-    try {
-      setLoading(true);
-      await Promise.all([
-        loadCertificates(),
-        loadStats()
-      ]);
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-      toast.error('Failed to load dashboard data');
-    } finally {
-      setLoading(false);
-    }
-  }, [loadCertificates, loadStats]);
-
   const loadCertificates = useCallback(async () => {
     try {
       const response = await apiService.getCertificates(user.email);
@@ -73,6 +52,27 @@ const Dashboard = ({ user, onLogout }) => {
       // Don't show error for stats failure
     }
   }, [user.email]);
+
+  const loadDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        loadCertificates(),
+        loadStats()
+      ]);
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  }, [loadCertificates, loadStats]);
+
+  useEffect(() => {
+    if (user && user.email) {
+      loadDashboardData();
+    }
+  }, [user, loadDashboardData]);
 
   const handleSync = async () => {
     try {

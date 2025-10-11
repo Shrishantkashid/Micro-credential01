@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://micro-credential-aggregator.vercel.app' 
+    : 'http://localhost:3000');
 
 class ApiService {
   constructor() {
@@ -31,7 +34,16 @@ class ApiService {
         return response;
       },
       (error) => {
-        console.error('API Response Error:', error.response?.data || error.message);
+        const errorData = error.response?.data;
+        if (typeof errorData === 'object' && errorData !== null) {
+          console.error('API Response Error:', {
+            status: error.response?.status,
+            message: errorData.message || errorData.error,
+            details: errorData
+          });
+        } else {
+          console.error('API Response Error:', errorData || error.message);
+        }
         return Promise.reject(error);
       }
     );
@@ -50,7 +62,7 @@ class ApiService {
   // Authentication endpoints
   async getAuthUrl() {
     try {
-      const response = await this.api.get('/auth/login');
+      const response = await this.api.get('/api/auth/login');
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -59,7 +71,7 @@ class ApiService {
 
   async checkAuthStatus(email) {
     try {
-      const response = await this.api.get(`/auth/status?email=${encodeURIComponent(email)}`);
+      const response = await this.api.get(`/api/auth/status?email=${encodeURIComponent(email)}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -68,7 +80,7 @@ class ApiService {
 
   async logout(email) {
     try {
-      const response = await this.api.post('/auth/logout', { email });
+      const response = await this.api.post('/api/auth/logout', { email });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -77,7 +89,7 @@ class ApiService {
 
   async refreshTokens(email) {
     try {
-      const response = await this.api.post('/auth/refresh', { email });
+      const response = await this.api.post('/api/auth/refresh', { email });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -87,7 +99,7 @@ class ApiService {
   // Gmail endpoints
   async syncCertificates(email) {
     try {
-      const response = await this.api.post('/gmail/sync', { email });
+      const response = await this.api.post('/api/gmail/sync', { email });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -96,7 +108,7 @@ class ApiService {
 
   async getCertificates(email) {
     try {
-      const response = await this.api.get(`/gmail/certificates?email=${encodeURIComponent(email)}`);
+      const response = await this.api.get(`/api/gmail/certificates?email=${encodeURIComponent(email)}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -105,7 +117,7 @@ class ApiService {
 
   async testGmailConnection(email) {
     try {
-      const response = await this.api.get(`/gmail/test?email=${encodeURIComponent(email)}`);
+      const response = await this.api.get(`/api/gmail/test?email=${encodeURIComponent(email)}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -114,7 +126,7 @@ class ApiService {
 
   async getStats(email) {
     try {
-      const response = await this.api.get(`/gmail/stats?email=${encodeURIComponent(email)}`);
+      const response = await this.api.get(`/api/gmail/stats?email=${encodeURIComponent(email)}`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -123,10 +135,12 @@ class ApiService {
 
   // Error handling
   handleError(error) {
+    let errorInfo;
+    
     if (error.response) {
       // Server responded with error status
       const { status, data } = error.response;
-      return {
+      errorInfo = {
         status,
         message: data.message || data.error || 'Server error occurred',
         details: data.details || null,
@@ -134,19 +148,27 @@ class ApiService {
       };
     } else if (error.request) {
       // Request made but no response received
-      return {
+      errorInfo = {
         status: 0,
         message: 'Unable to connect to server. Please check your internet connection.',
         code: 'NETWORK_ERROR'
       };
     } else {
       // Something happened in setting up the request
-      return {
+      errorInfo = {
         status: 0,
         message: error.message || 'An unexpected error occurred',
         code: 'CLIENT_ERROR'
       };
     }
+    
+    // Create a proper Error object with additional properties
+    const err = new Error(errorInfo.message);
+    err.status = errorInfo.status;
+    err.code = errorInfo.code;
+    err.details = errorInfo.details;
+    
+    return err;
   }
 
   // Utility methods
@@ -163,4 +185,5 @@ class ApiService {
   }
 }
 
-export default new ApiService();
+const apiServiceInstance = new ApiService();
+export default apiServiceInstance;

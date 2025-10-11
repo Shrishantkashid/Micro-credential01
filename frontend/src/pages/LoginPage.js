@@ -6,7 +6,6 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 const LoginPage = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
 
   const handleGoogleLogin = async () => {
     try {
@@ -15,7 +14,7 @@ const LoginPage = ({ onLogin }) => {
       // Get authentication URL from backend
       const response = await apiService.getAuthUrl();
       
-      if (response.success && response.authUrl) {
+      if (response.authUrl) {
         // Redirect to Google OAuth
         window.location.href = response.authUrl;
       } else {

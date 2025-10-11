@@ -69,8 +69,13 @@ class AuthService {
       // Clear the URL of any existing parameters
       window.history.replaceState({}, document.title, window.location.pathname);
       
+      // Determine the correct API endpoint based on environment
+      const apiBase = process.env.NODE_ENV === 'production' 
+        ? '' // In production, use relative path which will be handled by Vercel rewrites
+        : 'http://localhost:3000';
+      
       // Redirect to backend OAuth endpoint
-      window.location.href = '/auth/login';
+      window.location.href = `${apiBase}/api/auth/login`;
     } catch (error) {
       console.error('Error initiating OAuth:', error);
       throw error;
@@ -143,5 +148,5 @@ class AuthService {
   }
 }
 
-const authService = new AuthService();
-export default authService;
+const authServiceInstance = new AuthService();
+export default authServiceInstance;

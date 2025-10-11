@@ -1,8 +1,33 @@
 const { createClient } = require('@supabase/supabase-js');
-const config = require('../config/env.json');
+
+// Load configuration based on environment (same pattern as server.js)
+let config;
+try {
+  if (process.env.NODE_ENV === 'production') {
+    config = {
+      SUPABASE_URL: process.env.SUPABASE_URL,
+      SUPABASE_KEY: process.env.SUPABASE_KEY
+    };
+  } else {
+    try {
+      config = require('../config/env.json');
+    } catch (err) {
+      config = {
+        SUPABASE_URL: process.env.SUPABASE_URL,
+        SUPABASE_KEY: process.env.SUPABASE_KEY
+      };
+    }
+  }
+} catch (error) {
+  console.error('Supabase configuration loading error:', error.message);
+  throw error;
+}
 
 class SupabaseService {
   constructor() {
+    if (!config.SUPABASE_URL || !config.SUPABASE_KEY) {
+      throw new Error('Supabase configuration is missing. Please set SUPABASE_URL and SUPABASE_KEY.');
+    }
     this.supabase = createClient(config.SUPABASE_URL, config.SUPABASE_KEY);
   }
 

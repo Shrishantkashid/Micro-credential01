@@ -7,10 +7,6 @@ const CallbackPage = ({ onLogin }) => {
   const navigate = useNavigate();
   const [status, setStatus] = useState('processing');
 
-  useEffect(() => {
-    handleCallback();
-  }, [handleCallback]);
-
   const handleCallback = useCallback(async () => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
@@ -78,6 +74,10 @@ const CallbackPage = ({ onLogin }) => {
       }, 3000);
     }
   }, [navigate, onLogin]);
+
+  useEffect(() => {
+    handleCallback();
+  }, [handleCallback]);
 
   const renderContent = () => {
     switch (status) {

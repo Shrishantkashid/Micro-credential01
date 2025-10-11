@@ -10,7 +10,13 @@ class AuthController {
   async login(req, res) {
     try {
       const authUrl = gmailService.getAuthUrl();
-      
+      // If the client expects HTML (browser navigation), redirect directly to Google
+      const acceptsJson = req.headers.accept && req.headers.accept.includes('application/json');
+      if (!acceptsJson) {
+        return res.redirect(authUrl);
+      }
+
+      // Otherwise return JSON (API usage)
       res.json({
         success: true,
         authUrl,
@@ -109,10 +115,10 @@ class AuthController {
           }
         });
       } else {
-        // Browser redirect to frontend
+        // Browser redirect to frontend callback page
         const frontendUrl = process.env.NODE_ENV === 'production' 
-          ? '/dashboard' 
-          : 'http://localhost:3001/dashboard';
+          ? '/callback' 
+          : 'http://localhost:3001/callback';
         
         // Redirect with user info in URL params
         const userParam = encodeURIComponent(JSON.stringify({
