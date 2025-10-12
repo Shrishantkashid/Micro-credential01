@@ -5,6 +5,7 @@
   "installCommand": "npm install",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/login/auth/callback", "destination": "/login/auth/callback" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
