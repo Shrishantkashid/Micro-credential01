@@ -69,11 +69,19 @@ module.exports = async function handler(req, res) {
     if (tokenError) throw tokenError;
 
     // Redirect to frontend with success
-    const frontendUrl = process.env.NODE_ENV === 'production' 
+    const frontendUrl = process.env.NODE_ENV === 'production'
       ? 'https://micro-credential-aggregator.vercel.app'
       : 'http://localhost:3001';
-    
-    res.redirect(`${frontendUrl}/dashboard?auth=success`);
+
+    const userData = {
+      id: user.id,
+      google_id: userInfo.id,
+      email: userInfo.email,
+      name: userInfo.name,
+      picture: userInfo.picture
+    };
+    const encodedUser = encodeURIComponent(JSON.stringify(userData));
+    res.redirect(`${frontendUrl}/callback?user=${encodedUser}`);
   } catch (error) {
     console.error('Auth callback error:', error);
     const frontendUrl = process.env.NODE_ENV === 'production' 
