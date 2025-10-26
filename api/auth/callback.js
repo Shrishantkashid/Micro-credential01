@@ -1,6 +1,9 @@
 const { google } = require('googleapis');
 const { createClient } = require('@supabase/supabase-js');
 
+// NOTE: This is the PRODUCTION implementation used in Vercel serverless deployment.
+// For local development with Express, see controllers/authController.js
+
 module.exports = async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
