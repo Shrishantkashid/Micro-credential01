@@ -84,10 +84,10 @@ module.exports = async function handler(req, res) {
     res.redirect(`${frontendUrl}/callback?user=${encodedUser}`);
   } catch (error) {
     console.error('Auth callback error:', error);
-    const frontendUrl = process.env.NODE_ENV === 'production' 
+    const frontendUrl = process.env.NODE_ENV === 'production'
       ? 'https://micro-credential-aggregator.vercel.app'
       : 'http://localhost:3001';
-    
-    res.redirect(`${frontendUrl}?auth=error&message=${encodeURIComponent(error.message)}`);
+
+    res.redirect(`${frontendUrl}/callback?error=auth_failed&error_description=${encodeURIComponent(error.message)}`);
   }
 };
