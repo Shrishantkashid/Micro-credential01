@@ -93,6 +93,7 @@ const CallbackPage = ({ onLogin }) => {
       console.error('Current URL:', window.location.href);
 
       setStatus('error');
+      setErrorDetails(error.message || 'Unknown error occurred');
 
       // Show more detailed error message
       const errorMsg = error.message || 'Authentication failed';
