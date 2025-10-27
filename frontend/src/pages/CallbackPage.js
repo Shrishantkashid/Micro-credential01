@@ -6,6 +6,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 const CallbackPage = ({ onLogin }) => {
   const navigate = useNavigate();
   const [status, setStatus] = useState('processing');
+  const [errorDetails, setErrorDetails] = useState(null);
 
   const handleCallback = useCallback(async () => {
     try {
