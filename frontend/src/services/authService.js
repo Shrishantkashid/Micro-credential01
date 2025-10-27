@@ -86,21 +86,22 @@ class AuthService {
   extractUserFromCallback() {
     const urlParams = new URLSearchParams(window.location.search);
     const userParam = urlParams.get('user');
-    
+
     if (userParam) {
       try {
-        const user = JSON.parse(decodeURIComponent(userParam));
+        // URLSearchParams.get() already decodes the value, no need for decodeURIComponent
+        const user = JSON.parse(userParam);
         this.setCurrentUser(user);
-        
+
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
-        
+
         return user;
       } catch (error) {
         console.error('Error parsing user from callback:', error);
       }
     }
-    
+
     return null;
   }
 
