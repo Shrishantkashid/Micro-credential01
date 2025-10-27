@@ -13,25 +13,37 @@ const CallbackPage = ({ onLogin }) => {
       const error = urlParams.get('error');
       const errorDescription = urlParams.get('error_description');
       const userParam = urlParams.get('user');
-      
+      const codeParam = urlParams.get('code');
+
       console.log('Callback URL params:', {
         error,
-        errorDescription, 
+        errorDescription,
         userParam,
-        fullUrl: window.location.href
+        codeParam,
+        fullUrl: window.location.href,
+        allParams: Object.fromEntries(urlParams)
       });
+
+      // If we're getting a code directly (wrong redirect), show helpful error
+      if (codeParam && !userParam && !error) {
+        throw new Error('Configuration error: Google is redirecting to the wrong URL. The GOOGLE_REDIRECT_URI should be /api/auth/callback, not /callback or /login/auth/callback. Please check Vercel environment variables.');
+      }
 
       if (error) {
         let errorMessage = errorDescription || `OAuth error: ${error}`;
-        
+
+        console.error('OAuth error received:', { error, errorDescription });
+
         // Handle specific OAuth errors
-        if (error === 'access_denied' && errorDescription && 
+        if (error === 'access_denied' && errorDescription &&
             errorDescription.includes('has not completed the Google verification process')) {
           errorMessage = 'This app is in testing mode and requires approval. Please contact the developer to be added as a test user, or ask the developer to publish the app.';
         } else if (error === 'access_denied') {
           errorMessage = 'Access was denied. Please try again and grant the necessary permissions.';
+        } else if (error === 'auth_failed') {
+          errorMessage = `Authentication failed: ${errorDescription || 'Unknown error occurred during authentication'}`;
         }
-        
+
         throw new Error(errorMessage);
       }
 
