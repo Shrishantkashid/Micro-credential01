@@ -40,18 +40,27 @@ const CallbackPage = ({ onLogin }) => {
       
       if (userParam) {
         try {
-          const user = JSON.parse(decodeURIComponent(userParam));
+          // URLSearchParams.get() already decodes the value, no need for decodeURIComponent
+          const user = JSON.parse(userParam);
+          console.log('Parsed user data:', user);
+
+          if (!user || !user.email) {
+            throw new Error('Invalid user data: missing email');
+          }
+
           onLogin(user);
           toast.success('Successfully logged in!');
           navigate('/dashboard');
           return;
         } catch (parseError) {
           console.error('Error parsing user data:', parseError);
+          throw new Error('Failed to process authentication data. Please try again.');
         }
       }
 
       if (emailParam) {
-        const user = { email: decodeURIComponent(emailParam) };
+        // URLSearchParams.get() already decodes the value
+        const user = { email: emailParam };
         onLogin(user);
         toast.success('Successfully logged in!');
         navigate('/dashboard');
