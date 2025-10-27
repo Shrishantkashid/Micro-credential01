@@ -87,12 +87,19 @@ const CallbackPage = ({ onLogin }) => {
 
     } catch (error) {
       console.error('Callback error:', error);
+      console.error('Error stack:', error.stack);
+      console.error('Error type:', error.constructor.name);
+      console.error('Current URL:', window.location.href);
+
       setStatus('error');
-      toast.error(error.message || 'Authentication failed');
-      
+
+      // Show more detailed error message
+      const errorMsg = error.message || 'Authentication failed';
+      toast.error(errorMsg, { duration: 6000 });
+
       setTimeout(() => {
         navigate('/login');
-      }, 3000);
+      }, 5000);
     }
   }, [navigate, onLogin]);
 
