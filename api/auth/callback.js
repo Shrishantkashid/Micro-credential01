@@ -1,6 +1,9 @@
 const { google } = require('googleapis');
 const { createClient } = require('@supabase/supabase-js');
 
+// NOTE: This is the PRODUCTION implementation used in Vercel serverless deployment.
+// For local development with Express, see controllers/authController.js
+
 module.exports = async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -69,17 +72,25 @@ module.exports = async function handler(req, res) {
     if (tokenError) throw tokenError;
 
     // Redirect to frontend with success
-    const frontendUrl = process.env.NODE_ENV === 'production' 
+    const frontendUrl = process.env.NODE_ENV === 'production'
       ? 'https://micro-credential-aggregator.vercel.app'
       : 'http://localhost:3001';
-    
-    res.redirect(`${frontendUrl}/dashboard?auth=success`);
+
+    const userData = {
+      id: user.id,
+      google_id: userInfo.id,
+      email: userInfo.email,
+      name: userInfo.name,
+      picture: userInfo.picture
+    };
+    const encodedUser = encodeURIComponent(JSON.stringify(userData));
+    res.redirect(`${frontendUrl}/callback?user=${encodedUser}`);
   } catch (error) {
     console.error('Auth callback error:', error);
-    const frontendUrl = process.env.NODE_ENV === 'production' 
+    const frontendUrl = process.env.NODE_ENV === 'production'
       ? 'https://micro-credential-aggregator.vercel.app'
       : 'http://localhost:3001';
-    
-    res.redirect(`${frontendUrl}?auth=error&message=${encodeURIComponent(error.message)}`);
+
+    res.redirect(`${frontendUrl}/callback?error=auth_failed&error_description=${encodeURIComponent(error.message)}`);
   }
 };
