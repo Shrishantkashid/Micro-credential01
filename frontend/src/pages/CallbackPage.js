@@ -145,20 +145,27 @@ const CallbackPage = ({ onLogin }) => {
               Authentication Failed
             </h2>
             <div className="text-gray-600 mb-4 max-w-lg">
+              {errorDetails && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-left">
+                  <p className="font-semibold text-sm mb-1 text-red-800">Error Details:</p>
+                  <p className="text-sm text-red-700">{errorDetails}</p>
+                </div>
+              )}
               <p className="mb-2">
                 There was an error during the authentication process.
               </p>
-              <div className="text-sm bg-red-50 border border-red-200 rounded p-3 text-left">
+              <div className="text-sm bg-gray-50 border border-gray-200 rounded p-3 text-left">
                 <p className="font-semibold mb-1">Common Solutions:</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>If you see "app not verified" - contact the developer to add you as a test user</li>
                   <li>Make sure you grant all requested permissions</li>
                   <li>Try using a different Google account</li>
                   <li>Clear your browser cache and try again</li>
+                  <li>Check that environment variables are correctly configured in Vercel</li>
                 </ul>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => navigate('/login')}
               className="btn-primary"
             >
