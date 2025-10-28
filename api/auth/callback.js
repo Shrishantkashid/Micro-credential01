@@ -24,14 +24,40 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Authorization code is required' });
   }
 
+  // Validate environment variables
+  const requiredEnvVars = {
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI,
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_KEY: process.env.SUPABASE_KEY
+  };
+
+  const missingVars = Object.entries(requiredEnvVars)
+    .filter(([key, value]) => !value)
+    .map(([key]) => key);
+
+  if (missingVars.length > 0) {
+    console.error('Missing environment variables:', missingVars);
+    const frontendUrl = process.env.NODE_ENV === 'production'
+      ? 'https://micro-credential-aggregator.vercel.app'
+      : 'http://localhost:3001';
+    return res.redirect(`${frontendUrl}/callback?error=auth_failed&error_description=${encodeURIComponent(`Missing environment variables: ${missingVars.join(', ')}`)}`);
+  }
+
+  console.log('Starting OAuth callback with code:', code.substring(0, 20) + '...');
+
   try {
+    console.log('Step 1: Creating OAuth2 client...');
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
       process.env.GOOGLE_REDIRECT_URI
     );
 
+    console.log('Step 2: Exchanging code for tokens...');
     const { tokens } = await oauth2Client.getToken(code);
+    console.log('Step 2: Success - Got tokens');
     oauth2Client.setCredentials(tokens);
 
     // Get user info
