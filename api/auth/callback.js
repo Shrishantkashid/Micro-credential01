@@ -46,6 +46,9 @@ module.exports = async function handler(req, res) {
   }
 
   console.log('Starting OAuth callback with code:', code.substring(0, 20) + '...');
+  console.log('Environment check - CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'SET' : 'MISSING');
+  console.log('Environment check - CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'SET (length: ' + process.env.GOOGLE_CLIENT_SECRET.length + ')' : 'MISSING');
+  console.log('Environment check - REDIRECT_URI:', process.env.GOOGLE_REDIRECT_URI);
 
   try {
     console.log('Step 1: Creating OAuth2 client...');
@@ -54,10 +57,21 @@ module.exports = async function handler(req, res) {
       process.env.GOOGLE_CLIENT_SECRET,
       process.env.GOOGLE_REDIRECT_URI
     );
+    console.log('Step 1: Success - OAuth2 client created');
 
     console.log('Step 2: Exchanging code for tokens...');
-    const { tokens } = await oauth2Client.getToken(code);
-    console.log('Step 2: Success - Got tokens');
+    let tokens;
+    try {
+      const result = await oauth2Client.getToken(code);
+      tokens = result.tokens;
+      console.log('Step 2: Success - Got tokens');
+    } catch (tokenError) {
+      console.error('Step 2: FAILED - Token exchange error:');
+      console.error('- Error message:', tokenError.message);
+      console.error('- Error code:', tokenError.code);
+      console.error('- Error response:', tokenError.response?.data);
+      throw new Error(`Google token exchange failed: ${tokenError.message}. This usually means: 1) Invalid client credentials, 2) Authorization code expired/already used, or 3) Redirect URI mismatch.`);
+    }
     oauth2Client.setCredentials(tokens);
 
     // Get user info
