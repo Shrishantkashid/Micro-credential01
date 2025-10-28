@@ -123,13 +123,27 @@ module.exports = async function handler(req, res) {
       picture: userInfo.picture
     };
     const encodedUser = encodeURIComponent(JSON.stringify(userData));
+    console.log('Step 7: Success - Redirecting to frontend with user data');
     res.redirect(`${frontendUrl}/callback?user=${encodedUser}`);
   } catch (error) {
-    console.error('Auth callback error:', error);
+    console.error('========== AUTH CALLBACK ERROR ==========');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error code:', error.code);
+    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    console.error('=========================================');
+
     const frontendUrl = process.env.NODE_ENV === 'production'
       ? 'https://micro-credential-aggregator.vercel.app'
       : 'http://localhost:3001';
 
-    res.redirect(`${frontendUrl}/callback?error=auth_failed&error_description=${encodeURIComponent(error.message)}`);
+    // Create more detailed error message
+    let errorMessage = error.message || 'Unknown error';
+    if (error.code) {
+      errorMessage = `${errorMessage} (Code: ${error.code})`;
+    }
+
+    res.redirect(`${frontendUrl}/callback?error=auth_failed&error_description=${encodeURIComponent(errorMessage)}`);
   }
 };
