@@ -61,16 +61,20 @@ module.exports = async function handler(req, res) {
     oauth2Client.setCredentials(tokens);
 
     // Get user info
+    console.log('Step 3: Fetching user info from Google...');
     const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
     const { data: userInfo } = await oauth2.userinfo.get();
+    console.log('Step 3: Success - Got user info:', userInfo.email);
 
     // Initialize Supabase
+    console.log('Step 4: Connecting to Supabase...');
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_KEY
     );
 
     // Store user and tokens in Supabase
+    console.log('Step 5: Upserting user to database...');
     const { data: user, error: userError } = await supabase
       .from('users')
       .upsert({
@@ -83,8 +87,13 @@ module.exports = async function handler(req, res) {
       .select()
       .single();
 
-    if (userError) throw userError;
+    if (userError) {
+      console.error('Step 5: Failed - User upsert error:', userError);
+      throw userError;
+    }
+    console.log('Step 5: Success - User upserted with ID:', user.id);
 
+    console.log('Step 6: Upserting tokens to database...');
     const { error: tokenError } = await supabase
       .from('user_tokens')
       .upsert({
@@ -95,7 +104,11 @@ module.exports = async function handler(req, res) {
         updated_at: new Date().toISOString()
       });
 
-    if (tokenError) throw tokenError;
+    if (tokenError) {
+      console.error('Step 6: Failed - Token upsert error:', tokenError);
+      throw tokenError;
+    }
+    console.log('Step 6: Success - Tokens upserted');
 
     // Redirect to frontend with success
     const frontendUrl = process.env.NODE_ENV === 'production'
